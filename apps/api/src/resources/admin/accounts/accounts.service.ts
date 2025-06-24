@@ -1,6 +1,7 @@
 import {
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -18,6 +19,7 @@ import { Account } from './entities/account.entity';
 
 @Injectable()
 export class AccountsService {
+  private readonly logger = new Logger(AccountsService.name);
   constructor(private readonly prisma: PrismaService) {}
 
   //* Create Admin Account.
@@ -50,11 +52,16 @@ export class AccountsService {
       throw new InternalServerErrorException('Failed to create admin account.');
     }
 
-    return plainToInstance(CreateAdminAccountResponseDto, {
-      id: account.id,
-      createdAt: account.createdAt,
-      excludeExtraneousValues: true,
-    });
+    this.logger.log(`Admin account ${email} created successfully.`);
+
+    return plainToInstance(
+      CreateAdminAccountResponseDto,
+      {
+        id: account.id,
+        createdAt: account.createdAt,
+      },
+      { excludeExtraneousValues: true }
+    );
   }
 
   //TODO: Implement update functionality for admin accounts.
@@ -80,15 +87,20 @@ export class AccountsService {
       throw new InternalServerErrorException('Failed to update admin account.');
     }
 
-    return plainToInstance(UpdateAdminAccountResponseDto, {
-      id: account.id,
-      name: account.name,
-      email: account.email,
-      phone: account.phone,
-      deletedAt: account.deletedAt,
-      updatedAt: account.updatedAt,
-      excludeExtraneousValues: true,
-    });
+    return plainToInstance(
+      UpdateAdminAccountResponseDto,
+      {
+        id: account.id,
+        name: account.name,
+        email: account.email,
+        phone: account.phone,
+        deletedAt: account.deletedAt,
+        updatedAt: account.updatedAt,
+      },
+      {
+        excludeExtraneousValues: true,
+      }
+    );
   }
 
   //TODO: Implement find functionality for admin accounts.
