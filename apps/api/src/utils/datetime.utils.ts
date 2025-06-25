@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { add, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export class dateTimeUtils {
@@ -10,5 +10,9 @@ export class dateTimeUtils {
       return null;
     }
     return format(value, this.DATE_FORMAT, { locale: this.LOCALE });
+  }
+
+  static getOtpExpiration(): number {
+    return add(new Date(), { minutes: 10 }).getTime();
   }
 }

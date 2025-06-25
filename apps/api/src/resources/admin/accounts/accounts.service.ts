@@ -8,6 +8,8 @@ import {
 import { plainToInstance } from 'class-transformer';
 import { MetadataDto } from 'src/common/dto/metadata.dto';
 import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
+import { dateTimeUtils } from 'src/utils/datetime.utils';
+import { otpUtils } from 'src/utils/otp.utils';
 import { PrismaService } from '../../../prisma/prisma.service';
 import {
   AdminAccountResponseDto,
@@ -43,26 +45,36 @@ export class AccountsService {
       );
     }
 
-    //TODO: Generate a random password for the admin account.
-    //TODO: Send email notification to the admin account.
+    const otp = otpUtils.generateOTP(6);
+    console.log(`Generated OTP for admin account: ${otp}`);
+
+    const hashedOtp = otpUtils.hashOTP(otp);
+
+    const otpExpiration = dateTimeUtils.getOtpExpiration();
 
     const account = await this.prisma.adminAccount.upsert({
       where: { email },
       update: {
         name,
         phone,
+        otp: hashedOtp,
+        otpExpiresAt: new Date(otpExpiration),
         deletedAt: null,
       },
       create: {
         name,
         email,
         phone,
+        otp: hashedOtp,
+        otpExpiresAt: new Date(otpExpiration),
       },
     });
 
     if (!account) {
       throw new InternalServerErrorException('Failed to create admin account.');
     }
+
+    //TODO: Send email notification to the admin account.
 
     const wasRestored = Boolean(accountByEmail);
     const action = wasRestored ? 'restored' : 'created';
