@@ -3,13 +3,13 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
-  UnprocessableEntityException,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { MetadataDTO } from 'src/common/dto/metadata.dto';
 import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
 import { PrismaService } from '../../../prisma/prisma.service';
 import {
+  AdminAccountResponseDto,
   AdminAccountsDto,
   AdminsAccountsResponseDto,
 } from './dto/admin-account.dto';
@@ -21,7 +21,6 @@ import {
   UpdateAdminAccountRequestDto,
   UpdateAdminAccountResponseDto,
 } from './dto/update-admin-account';
-import { Account } from './entities/account.entity';
 
 @Injectable()
 export class AccountsService {
@@ -35,16 +34,38 @@ export class AccountsService {
   ): Promise<CreateAdminAccountResponseDto> {
     const { name, email, phone } = request;
 
-    const existsByEmail = this.existsAdminByEmail(email);
+    //TODO: Generate a random password for the admin account.
+    //TODO: Send email notification to the admin account.
 
-    if (await existsByEmail) {
-      throw new UnprocessableEntityException(
-        'Account with this email already registered.'
+    const accountByEmail = await this.getAdminAccountByEmail(email);
+
+    if (accountByEmail?.deletedAt) {
+      const existingAccount = await this.prisma.adminAccount.update({
+        where: { id: accountByEmail.id },
+        data: {
+          name,
+          email,
+          phone,
+          deletedAt: null,
+        },
+      });
+      this.logger.log(`Admin account ${email} restored successfully.`);
+      return plainToInstance(
+        CreateAdminAccountResponseDto,
+        {
+          id: existingAccount.id,
+          createdAt: existingAccount.createdAt,
+        },
+        { excludeExtraneousValues: true }
       );
     }
 
-    //TODO: Generate a random password for the admin account.
-    //TODO: Send email notification to the admin account.
+    if (accountByEmail) {
+      this.logger.warn(`Admin account with email ${email} already exists.`);
+      throw new InternalServerErrorException(
+        `Admin account with email ${email} already exists.`
+      );
+    }
 
     const account = await this.prisma.adminAccount.create({
       data: {
@@ -76,7 +97,7 @@ export class AccountsService {
   ): Promise<UpdateAdminAccountResponseDto> {
     const { name, email, phone, deletedAt } = request;
 
-    await this.findAdminAccountById(id);
+    await this.getAdminAccountById(id);
 
     const account = await this.prisma.adminAccount.update({
       where: { id },
@@ -164,41 +185,28 @@ export class AccountsService {
   }
 
   //* Find Admin Account By Id.
-
-  async findAdminAccountById(id: string): Promise<Account> {
-    const account = await this.prisma.adminAccount.findUnique({
-      where: { id },
-    });
+  async findAdminAccountById(id: string): Promise<AdminAccountResponseDto> {
+    const account = await this.getAdminAccountById(id);
 
     if (!account) {
-      throw new NotFoundException(`Admin account with id "${id}" not found`);
+      this.logger.warn(`Admin account with ID ${id} not found.`);
+      throw new NotFoundException(`Admin account with ID ${id} not found.`);
     }
 
-    return plainToInstance(Account, account, {
-      excludeExtraneousValues: true,
-    });
-  }
-
-  //* Find Admin Account By Email.
-
-  async findAdminAccountByEmail(email: string): Promise<Account | null> {
-    return await this.prisma.adminAccount.findUnique({
-      where: { email },
-    });
-  }
-
-  //* Check if Admin Account Exists By Email.
-
-  async existsAdminByEmail(email: string): Promise<boolean> {
-    const account = await this.findAdminAccountByEmail(email);
-    return !!account;
+    return account;
   }
 
   //* Delete Admin Account By Id.
 
   async deleteAdminAccount(id: string) {
-    await this.findAdminAccountById(id);
+    const account = await this.getAdminAccountById(id);
 
+    if (!account) {
+      this.logger.warn(`Admin account with ID ${id} not found for deletion.`);
+      throw new NotFoundException(`Admin account with ID ${id} not found.`);
+    }
+
+    this.logger.log(`Soft deleting admin account with ID ${id}.`);
     await this.prisma.adminAccount.update({
       where: { id },
       data: {
@@ -210,10 +218,47 @@ export class AccountsService {
   //* Permanently remove admin account.
 
   async removeAdminAccount(id: string) {
-    await this.findAdminAccountById(id);
+    const account = await this.getAdminAccountById(id);
+
+    if (!account) {
+      this.logger.warn(`Admin account with ID ${id} not found for deletion.`);
+      throw new NotFoundException(`Admin account with ID ${id} not found.`);
+    }
+
+    this.logger.log(`Soft deleting admin account with ID ${id}.`);
 
     await this.prisma.adminAccount.delete({
       where: { id },
+    });
+  }
+
+  //* Get Admin Account By Id.
+
+  async getAdminAccountById(
+    id: string
+  ): Promise<AdminAccountResponseDto | null> {
+    const account = await this.prisma.adminAccount.findUnique({
+      where: { id },
+    });
+
+    return plainToInstance(AdminAccountResponseDto, account, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  //* get Admin Account By Email.
+
+  async getAdminAccountByEmail(
+    email: string
+  ): Promise<AdminAccountResponseDto | null> {
+    const account = await this.prisma.adminAccount.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    return plainToInstance(AdminAccountResponseDto, account, {
+      excludeExtraneousValues: true,
     });
   }
 }

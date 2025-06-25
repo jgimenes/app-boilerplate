@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
@@ -110,14 +111,15 @@ export class AccountsController {
       'This endpoint marks an admin account as removed by setting the deletedAt field. The account is not permanently deleted and can be restored later if needed.',
     operationId: 'deleteAdminAccount',
   })
+  @HttpCode(204)
   @ApiNoContentResponse({
     description: 'Admin account permanently removed successfully.',
   })
   @ApiNotFoundResponse({
     description: 'Admin account not found.',
   })
-  deleteAdminAccount(@Param('id') id: string) {
-    return this.accountsService.deleteAdminAccount(id);
+  async deleteAdminAccount(@Param('id') id: string): Promise<void> {
+    await this.accountsService.deleteAdminAccount(id);
   }
 
   @Delete(':id/remove')
@@ -127,13 +129,14 @@ export class AccountsController {
       'This endpoint permanently deletes an admin account from the system using its ID. This action cannot be undone.',
     operationId: 'removeAdminAccount',
   })
+  @HttpCode(204)
   @ApiNoContentResponse({
     description: 'Admin account permanently removed successfully.',
   })
   @ApiNotFoundResponse({
     description: 'Admin account not found.',
   })
-  removeAdminAccount(@Param('id') id: string) {
-    return this.accountsService.removeAdminAccount(id);
+  async removeAdminAccount(@Param('id') id: string): Promise<void> {
+    await this.accountsService.removeAdminAccount(id);
   }
 }
