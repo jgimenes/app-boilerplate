@@ -3,6 +3,7 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { MetadataDTO } from 'src/common/dto/metadata.dto';
@@ -11,7 +12,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import {
   AdminAccountResponseDto,
   AdminAccountsDto,
-  AdminsAccountsResponseDto,
+  AdminAccountsResponseDto,
 } from './dto/admin-account.dto';
 import {
   CreateAdminAccountRequestDto,
@@ -34,41 +35,25 @@ export class AccountsService {
   ): Promise<CreateAdminAccountResponseDto> {
     const { name, email, phone } = request;
 
+    const accountByEmail = await this.getAdminAccountByEmail(email);
+
+    if (accountByEmail?.deletedAt === null) {
+      throw new UnprocessableEntityException(
+        `Admin account with email "${email}" already exists.`
+      );
+    }
+
     //TODO: Generate a random password for the admin account.
     //TODO: Send email notification to the admin account.
 
-    const accountByEmail = await this.getAdminAccountByEmail(email);
-
-    if (accountByEmail?.deletedAt) {
-      const existingAccount = await this.prisma.adminAccount.update({
-        where: { id: accountByEmail.id },
-        data: {
-          name,
-          email,
-          phone,
-          deletedAt: null,
-        },
-      });
-      this.logger.log(`Admin account ${email} restored successfully.`);
-      return plainToInstance(
-        CreateAdminAccountResponseDto,
-        {
-          id: existingAccount.id,
-          createdAt: existingAccount.createdAt,
-        },
-        { excludeExtraneousValues: true }
-      );
-    }
-
-    if (accountByEmail) {
-      this.logger.warn(`Admin account with email ${email} already exists.`);
-      throw new InternalServerErrorException(
-        `Admin account with email ${email} already exists.`
-      );
-    }
-
-    const account = await this.prisma.adminAccount.create({
-      data: {
+    const account = await this.prisma.adminAccount.upsert({
+      where: { email },
+      update: {
+        name,
+        phone,
+        deletedAt: null,
+      },
+      create: {
         name,
         email,
         phone,
@@ -79,7 +64,10 @@ export class AccountsService {
       throw new InternalServerErrorException('Failed to create admin account.');
     }
 
-    this.logger.log(`Admin account ${email} created successfully.`);
+    const wasRestored = Boolean(accountByEmail);
+    const action = wasRestored ? 'restored' : 'created';
+
+    this.logger.log(`Admin account "${email}" ${action} successfully.`);
 
     return plainToInstance(
       CreateAdminAccountResponseDto,
@@ -97,7 +85,12 @@ export class AccountsService {
   ): Promise<UpdateAdminAccountResponseDto> {
     const { name, email, phone, deletedAt } = request;
 
-    await this.getAdminAccountById(id);
+    const existsAdminAccount = await this.getAdminAccountById(id);
+
+    if (!existsAdminAccount) {
+      this.logger.warn(`Admin account with ID ${id} not found.`);
+      throw new NotFoundException(`Admin account with ID ${id} not found.`);
+    }
 
     const account = await this.prisma.adminAccount.update({
       where: { id },
@@ -131,7 +124,7 @@ export class AccountsService {
 
   async findAllAdminAccounts(
     request: PaginationQueryDTO
-  ): Promise<AdminsAccountsResponseDto> {
+  ): Promise<AdminAccountsResponseDto> {
     const { page, limit, sortBy, orderBy } = request;
     const skip = (page - 1) * limit;
 

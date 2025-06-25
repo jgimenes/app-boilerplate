@@ -23,7 +23,7 @@ import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
 import { AccountsService } from './accounts.service';
 import {
   AdminAccountResponseDto,
-  AdminsAccountsResponseDto,
+  AdminAccountsResponseDto,
 } from './dto/admin-account.dto';
 import {
   CreateAdminAccountRequestDto,
@@ -62,9 +62,11 @@ export class AccountsController {
   })
   @ApiOkResponse({
     description: 'Admin accounts retrieved successfully.',
-    type: AdminsAccountsResponseDto,
+    type: AdminAccountsResponseDto,
   })
-  findAllAdminAccounts(@Query() request: PaginationQueryDTO) {
+  findAllAdminAccounts(
+    @Query() request: PaginationQueryDTO
+  ): Promise<AdminAccountsResponseDto> {
     return this.accountsService.findAllAdminAccounts(request);
   }
 
@@ -78,7 +80,7 @@ export class AccountsController {
     description: 'Admin account retrieved successfully.',
     type: AdminAccountResponseDto,
   })
-  findOne(@Param('id') id: string) {
+  findAdminAccountById(@Param('id') id: string) {
     return this.accountsService.findAdminAccountById(id);
   }
 

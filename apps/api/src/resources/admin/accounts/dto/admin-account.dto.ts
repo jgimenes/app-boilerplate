@@ -124,7 +124,10 @@ export class AdminAccountsDto extends PartialType(
   ] as const)
 ) {}
 
-export class AdminsAccountsResponseDto {
+export class AdminAccountsResponseDto {
+  @ApiProperty({ type: MetadataDTO })
   metadata: MetadataDTO;
+
+  @ApiProperty({ type: [AdminAccountsDto] })
   accounts: AdminAccountsDto[];
 }
