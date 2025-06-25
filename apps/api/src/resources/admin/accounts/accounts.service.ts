@@ -6,7 +6,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { MetadataDTO } from 'src/common/dto/metadata.dto';
+import { MetadataDto } from 'src/common/dto/metadata.dto';
 import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
 import { PrismaService } from '../../../prisma/prisma.service';
 import {
@@ -163,13 +163,17 @@ export class AccountsService {
       pages: totalPages,
       firstPage: 1,
       lastPage: totalPages,
-      previousPage: page > 1 ? page - 1 : null,
-      nextPage: page < totalPages ? page + 1 : null,
+      previousPage: page > 1 ? page - 1 : undefined,
+      nextPage: page < totalPages ? page + 1 : undefined,
     };
 
-    const metadataDto = plainToInstance(MetadataDTO, metadata, {
-      excludeExtraneousValues: true,
-    });
+    const metadataDto = plainToInstance<MetadataDto, object>(
+      MetadataDto,
+      metadata,
+      {
+        excludeExtraneousValues: true,
+      }
+    );
 
     return {
       accounts,

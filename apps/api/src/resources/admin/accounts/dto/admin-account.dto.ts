@@ -8,7 +8,8 @@ import {
   IsString,
   Length,
 } from 'class-validator';
-import { MetadataDTO } from 'src/common/dto/metadata.dto';
+import { MetadataDto } from 'src/common/dto/metadata.dto';
+import { dateTimeUtils } from 'src/utils/datetime.utils';
 
 export class AdminAccountDto {
   @ApiProperty({
@@ -83,6 +84,9 @@ export class AdminAccountDto {
     example: '2024-06-24T12:34:56.789Z',
   })
   @Expose()
+  @Transform(({ value }: { value: Date }) =>
+    dateTimeUtils.toLocalDateTime(value)
+  )
   createdAt: Date;
 
   @ApiProperty({
@@ -90,6 +94,9 @@ export class AdminAccountDto {
     example: '2024-06-24T12:34:56.789Z',
   })
   @Expose()
+  @Transform(({ value }: { value: Date }) =>
+    dateTimeUtils.toLocalDateTime(value)
+  )
   updatedAt: Date;
 
   @ApiProperty({
@@ -99,6 +106,9 @@ export class AdminAccountDto {
   })
   @IsOptional()
   @Expose()
+  @Transform(({ value }: { value: Date }) =>
+    dateTimeUtils.toLocalDateTime(value)
+  )
   deletedAt?: Date;
 }
 
@@ -125,8 +135,8 @@ export class AdminAccountsDto extends PartialType(
 ) {}
 
 export class AdminAccountsResponseDto {
-  @ApiProperty({ type: MetadataDTO })
-  metadata: MetadataDTO;
+  @ApiProperty({ type: MetadataDto })
+  metadata: MetadataDto;
 
   @ApiProperty({ type: [AdminAccountsDto] })
   accounts: AdminAccountsDto[];
