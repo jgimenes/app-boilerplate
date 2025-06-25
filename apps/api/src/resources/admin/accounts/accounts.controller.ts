@@ -19,6 +19,7 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { HttpExceptionDto } from 'src/common/dto/http-exception.dto';
 import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
 import { AccountsService } from './accounts.service';
 import {
@@ -36,6 +37,8 @@ import { UpdateAdminAccountRequestDto } from './dto/update-admin-account';
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 
+  //* Create admin account
+
   @Post()
   @ApiOperation({
     summary: 'Create a new admin account',
@@ -49,6 +52,7 @@ export class AccountsController {
   })
   @ApiUnprocessableEntityResponse({
     description: 'Invalid input data.',
+    type: HttpExceptionDto,
   })
   createAdminAccount(@Body() request: CreateAdminAccountRequestDto) {
     return this.accountsService.createAdminAccount(request);
@@ -80,6 +84,10 @@ export class AccountsController {
     description: 'Admin account retrieved successfully.',
     type: AdminAccountResponseDto,
   })
+  @ApiNotFoundResponse({
+    description: 'Admin account not found.',
+    type: HttpExceptionDto,
+  })
   findAdminAccountById(@Param('id') id: string) {
     return this.accountsService.findAdminAccountById(id);
   }
@@ -90,13 +98,13 @@ export class AccountsController {
       'This endpoint updates an existing admin account using its ID. Only the fields provided in the request body will be updated.',
     operationId: 'updateAdminAccount',
   })
-  @ApiBody({ type: UpdateAdminAccountRequestDto, required: true })
   @ApiOkResponse({
     description: 'Admin account updated successfully.',
     type: UpdateAdminAccountRequestDto,
   })
   @ApiNotFoundResponse({
     description: 'Admin account not found.',
+    type: HttpExceptionDto,
   })
   @Patch(':id')
   updateAdminAccount(
@@ -119,6 +127,7 @@ export class AccountsController {
   })
   @ApiNotFoundResponse({
     description: 'Admin account not found.',
+    type: HttpExceptionDto,
   })
   async deleteAdminAccount(@Param('id') id: string): Promise<void> {
     await this.accountsService.deleteAdminAccount(id);
@@ -137,6 +146,7 @@ export class AccountsController {
   })
   @ApiNotFoundResponse({
     description: 'Admin account not found.',
+    type: HttpExceptionDto,
   })
   async removeAdminAccount(@Param('id') id: string): Promise<void> {
     await this.accountsService.removeAdminAccount(id);
