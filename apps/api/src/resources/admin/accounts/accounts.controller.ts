@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -17,8 +18,12 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
 import { AccountsService } from './accounts.service';
-import { AdminAccountResponseDto } from './dto/admin-account.dto';
+import {
+  AdminAccountResponseDto,
+  AdminsAccountsResponseDto,
+} from './dto/admin-account.dto';
 import {
   CreateAdminAccountRequestDto,
   CreateAdminAccountResponseDto,
@@ -49,8 +54,17 @@ export class AccountsController {
   }
 
   @Get()
-  findAll() {
-    return this.accountsService.findAll();
+  @ApiOperation({
+    summary: 'List all admin accounts',
+    description: 'Returns a paginated list of all admin accounts.',
+    operationId: 'findAllAdminAccounts',
+  })
+  @ApiOkResponse({
+    description: 'Admin accounts retrieved successfully.',
+    type: AdminsAccountsResponseDto,
+  })
+  findAllAdminAccounts(@Query() request: PaginationQueryDTO) {
+    return this.accountsService.findAllAdminAccounts(request);
   }
 
   @Get(':id')

@@ -8,6 +8,7 @@ import {
   IsString,
   Length,
 } from 'class-validator';
+import { MetadataDTO } from 'src/common/dto/metadata.dto';
 
 export class AdminAccountDto {
   @ApiProperty({
@@ -112,3 +113,18 @@ export class AdminAccountResponseDto extends PartialType(
     'deletedAt',
   ] as const)
 ) {}
+
+export class AdminAccountsDto extends PartialType(
+  PickType(AdminAccountDto, [
+    'id',
+    'name',
+    'email',
+    'phone',
+    'createdAt',
+  ] as const)
+) {}
+
+export class AdminsAccountsResponseDto {
+  metadata: MetadataDTO;
+  accounts: AdminAccountsDto[];
+}

@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ClsService } from 'nestjs-cls';
-import { HttpExceptionDto } from '../common/http-exception.dto'; // ajuste o caminho conforme seu projeto
+import { HttpExceptionDto } from '../common/dto/http-exception.dto'; // ajuste o caminho conforme seu projeto
 
 @Catch()
 export class HttpExceptionsFilter implements ExceptionFilter {

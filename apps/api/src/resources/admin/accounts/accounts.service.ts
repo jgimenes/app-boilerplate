@@ -6,7 +6,13 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
+import { MetadataDTO } from 'src/common/dto/metadata.dto';
+import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
 import { PrismaService } from '../../../prisma/prisma.service';
+import {
+  AdminAccountsDto,
+  AdminsAccountsResponseDto,
+} from './dto/admin-account.dto';
 import {
   CreateAdminAccountRequestDto,
   CreateAdminAccountResponseDto,
@@ -64,7 +70,6 @@ export class AccountsService {
     );
   }
 
-  //TODO: Implement update functionality for admin accounts.
   async updateAdminAccount(
     id: string,
     request: UpdateAdminAccountRequestDto
@@ -103,9 +108,59 @@ export class AccountsService {
     );
   }
 
-  //TODO: Implement find functionality for admin accounts.
-  findAll() {
-    return `This action returns all accounts`;
+  async findAllAdminAccounts(
+    request: PaginationQueryDTO
+  ): Promise<AdminsAccountsResponseDto> {
+    const { page, limit, sortBy, orderBy } = request;
+    const skip = (page - 1) * limit;
+
+    const allowedSortFields = [
+      'id',
+      'name',
+      'email',
+      'phone',
+      'createdAt',
+      'updatedAt',
+    ];
+    const sortByField = sortBy ?? 'name';
+    const safeSortBy = allowedSortFields.includes(sortByField)
+      ? sortByField
+      : 'name';
+
+    const [accountsData, count] = await Promise.all([
+      this.prisma.adminAccount.findMany({
+        skip,
+        take: limit,
+        orderBy: { [safeSortBy]: orderBy },
+      }),
+      this.prisma.adminAccount.count(),
+    ]);
+
+    const accounts = plainToInstance(AdminAccountsDto, accountsData, {
+      excludeExtraneousValues: true,
+    });
+
+    const totalPages = Math.ceil(count / limit) || 1;
+
+    const metadata = {
+      count,
+      page,
+      limit,
+      pages: totalPages,
+      firstPage: 1,
+      lastPage: totalPages,
+      previousPage: page > 1 ? page - 1 : null,
+      nextPage: page < totalPages ? page + 1 : null,
+    };
+
+    const metadataDto = plainToInstance(MetadataDTO, metadata, {
+      excludeExtraneousValues: true,
+    });
+
+    return {
+      accounts,
+      metadata: metadataDto,
+    };
   }
 
   //* Find Admin Account By Id.

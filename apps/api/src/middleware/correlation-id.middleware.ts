@@ -26,6 +26,8 @@ export class CorrelationIdMiddleware implements NestMiddleware {
     // Armazena na requisição (útil para logs diretos ou rastreio fora do CLS)
     request.correlationId = correlationId;
 
+    res.setHeader('X-Correlation-ID', correlationId);
+
     next();
   }
 }
