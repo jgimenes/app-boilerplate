@@ -26,7 +26,7 @@ model AdminAccount {
 
 model AdminAccountAuth {
   id                    String    @id @default(ulid())
-  adminAccountId        String
+  adminAccountId        String    @unique
   otp                   String?
   otpExpiresAt          DateTime?
   accessToken           String?

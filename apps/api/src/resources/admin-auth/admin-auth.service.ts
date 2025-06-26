@@ -5,9 +5,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
+import { ClsService } from 'nestjs-cls';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { authUtils } from 'src/utils/auth.utils';
 import {
+  SignInAdminRequestDto,
   SignInValidateRequestDto,
   SignInValidateResponseDto,
 } from './dto/admin-auth.dto';
@@ -15,10 +17,17 @@ import {
 @Injectable()
 export class AdminAuthService {
   private readonly logger = new Logger(AdminAuthService.name);
-  private readonly unauthorizedErrorMessage =
-    'Email or password is not invalid';
+  private readonly unauthorizedErrorMessage = 'Email or password is not valid';
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cls: ClsService
+  ) {}
+
+  private get correlationId(): string {
+    const rawCorrelationId: string | undefined = this.cls.get('correlationId');
+    return typeof rawCorrelationId === 'string' ? rawCorrelationId : 'N/A';
+  }
 
   //* This method is used to validate the admin account during sign-in
 
@@ -27,52 +36,103 @@ export class AdminAuthService {
   ): Promise<SignInValidateResponseDto> {
     const { email } = request;
 
-    // Find the admin account by email
-
     const adminAccount = await this.prisma.adminAccount.findUnique({
       where: {
         email,
-        deletedAt: null, // Ensure the account is not deleted
       },
     });
 
-    // If the admin account does not exist, throw an error
-
-    if (!adminAccount) {
-      this.logger.warn(`Admin account with email ${email} not found`);
+    if (!adminAccount || adminAccount.deletedAt) {
+      this.logger.warn(
+        `[${this.correlationId}] - Admin account with email ${email} not found or deleted`
+      );
       throw new UnauthorizedException(this.unauthorizedErrorMessage);
     }
 
-    // If the admin account exists, generate a otp
     const stringOtp = authUtils.generateOTP();
-
     console.log(`Generated OTP: ${stringOtp}`);
 
     const otpHash = authUtils.hashOTP(stringOtp);
-    const otpExpiration = new Date(Date.now() + 1 * 60 * 1000); // OTP valid for 1 minutes
+    const otpExpiration = new Date(Date.now() + 1 * 60 * 1000); // 1 minuto
 
-    // Update the admin account with the OTP hash and expiration time
-
-    const updatedAdminAccount = await this.prisma.adminAccountAuth.create({
-      data: {
+    // Upsert the admin account auth data with the OTP and expiration time
+    const auth = await this.prisma.adminAccountAuth.upsert({
+      where: {
+        adminAccountId: adminAccount.id,
+      },
+      update: {
+        otp: otpHash,
+        otpExpiresAt: otpExpiration,
+      },
+      create: {
         adminAccountId: adminAccount.id,
         otp: otpHash,
         otpExpiresAt: otpExpiration,
       },
     });
 
-    // If the update is successful, log the success message
-    if (!updatedAdminAccount) {
+    // Check if the auth data was successfully created or updated
+    if (!auth) {
       this.logger.error(
-        `Failed to update admin account with email ${email} with OTP`
+        `[${this.correlationId}] - Failed to upsert admin account auth for email ${email}`
       );
       throw new InternalServerErrorException();
     }
 
-    //TODO: Send OTP to the admin account via email or SMS
+    // TODO: enviar o OTP
 
     return plainToInstance(SignInValidateResponseDto, adminAccount, {
       excludeExtraneousValues: true,
+    });
+  }
+
+  //* Sign In the admin account
+
+  async signInAdminAccount(request: SignInAdminRequestDto): Promise<void> {
+    const { id, otp } = request;
+
+    // Find the auth data for the admin account
+
+    const authData = await this.prisma.adminAccountAuth.findUnique({
+      where: {
+        adminAccountId: id,
+      },
+    });
+
+    // Check if the auth data exists and validate the OTP
+
+    if (!authData || !authData.otp) {
+      this.logger.warn(
+        `[${this.correlationId}] - No OTP data found for admin account ID ${id}`
+      );
+      throw new UnauthorizedException(this.unauthorizedErrorMessage);
+    }
+
+    // Validate the OTP and check if it has expired
+    const isOtpValid = await authUtils.compareOTP(otp, authData.otp);
+    const isOtpExpired =
+      !authData.otpExpiresAt || authData.otpExpiresAt < new Date();
+
+    if (!isOtpValid || isOtpExpired) {
+      this.logger.warn(
+        `[${this.correlationId}] - OTP validation failed for admin account ID ${id}. Valid: ${isOtpValid}, Expired: ${isOtpExpired}`
+      );
+      void this.removeAdminAccountAuth(id);
+      throw new UnauthorizedException(this.unauthorizedErrorMessage);
+    }
+
+    // Remove the OTP and its expiration time after successful validation
+    await this.prisma.adminAccountAuth.delete({
+      where: { adminAccountId: id },
+    });
+
+    // TODO: Generate and return a JWT token for the admin account
+  }
+
+  // Remove the admin account auth data
+  async removeAdminAccountAuth(id: string): Promise<void> {
+    await this.prisma.adminAccountAuth.delete({
+      where: { adminAccountId: id },
     });
   }
 }

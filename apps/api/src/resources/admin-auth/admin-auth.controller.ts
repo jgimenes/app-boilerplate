@@ -2,6 +2,7 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AdminAuthService } from './admin-auth.service';
 import {
+  SignInAdminRequestDto,
   SignInValidateRequestDto,
   SignInValidateResponseDto,
 } from './dto/admin-auth.dto';
@@ -25,5 +26,19 @@ export class AuthController {
     @Body() request: SignInValidateRequestDto
   ): Promise<SignInValidateResponseDto> {
     return await this.adminAuthService.signInValidateAdminAccount(request);
+  }
+
+  @Post('sign-in')
+  @ApiOperation({
+    summary: 'Sign In Admin Account',
+    description: 'Signs in the admin account using the provided email and OTP.',
+  })
+  @ApiCreatedResponse({
+    description: 'Admin account signed in successfully.',
+  })
+  async signInAdminAccount(
+    @Body() request: SignInAdminRequestDto
+  ): Promise<void> {
+    await this.adminAuthService.signInAdminAccount(request);
   }
 }
