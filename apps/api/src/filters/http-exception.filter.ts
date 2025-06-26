@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ClsService } from 'nestjs-cls';
-import { HttpExceptionDto } from '../common/dto/http-exception.dto'; // ajuste o caminho conforme seu projeto
+import { HttpExceptionDto } from '../common/dto/http-exception.dto';
 
 @Catch()
 export class HttpExceptionsFilter implements ExceptionFilter {
@@ -16,7 +16,7 @@ export class HttpExceptionsFilter implements ExceptionFilter {
 
   constructor(private readonly cls: ClsService) {}
 
-  catch(exception: unknown, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
@@ -25,10 +25,11 @@ export class HttpExceptionsFilter implements ExceptionFilter {
     const correlationId =
       typeof rawCorrelationId === 'string' ? rawCorrelationId : 'N/A';
 
-    const status =
+    const status = (
       exception instanceof HttpException
         ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+        : HttpStatus.INTERNAL_SERVER_ERROR
+    ) as HttpStatus;
 
     let realMessage: string;
     let stack: string | undefined;
@@ -42,7 +43,7 @@ export class HttpExceptionsFilter implements ExceptionFilter {
     }
 
     const clientMessage =
-      (status as HttpStatus) === HttpStatus.INTERNAL_SERVER_ERROR
+      status === HttpStatus.INTERNAL_SERVER_ERROR
         ? 'Internal server error'
         : realMessage;
 
@@ -55,11 +56,14 @@ export class HttpExceptionsFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
     };
 
-    this.logger.error(
-      `[${correlationId}] [${request.method}] ${request.url} - Status: ${status} - Message: ${realMessage}`,
-      stack,
-      HttpExceptionsFilter.name
-    );
+    // Log apenas para status 500
+    if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
+      this.logger.error(
+        `[${correlationId}] [${request.method}] ${request.url} - Status: ${status} - Message: ${realMessage}`,
+        stack,
+        HttpExceptionsFilter.name
+      );
+    }
 
     response.status(status).json(errorResponse);
   }
