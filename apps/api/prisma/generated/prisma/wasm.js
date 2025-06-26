@@ -128,7 +128,6 @@ exports.Prisma.AdminAccountScalarFieldEnum = {
 };
 
 exports.Prisma.AdminAccountAuthScalarFieldEnum = {
-  id: 'id',
   adminAccountId: 'adminAccountId',
   otp: 'otp',
   otpExpiresAt: 'otpExpiresAt',
@@ -141,8 +140,7 @@ exports.Prisma.AdminAccountAuthScalarFieldEnum = {
   provider: 'provider',
   providerId: 'providerId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {

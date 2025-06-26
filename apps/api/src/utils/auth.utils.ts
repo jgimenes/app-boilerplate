@@ -1,7 +1,12 @@
+import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { randomInt } from 'crypto';
 
+@Injectable()
 export class authUtils {
+  constructor(private readonly jwtService: JwtService) {}
+
   //* Generates a random OTP (One Time Password) of specified length
 
   static generateOTP(length: number = 6): string {
