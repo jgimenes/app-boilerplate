@@ -5,14 +5,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { plainToInstance } from 'class-transformer';
 import { ClsService } from 'nestjs-cls';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { authUtils } from 'src/utils/auth.utils';
 import {
   SignInAdminRequestDto,
   SignInValidateRequestDto,
-  SignInValidateResponseDto,
 } from './dto/admin-auth.dto';
 
 @Injectable()
@@ -35,7 +33,7 @@ export class AdminAuthService {
 
   async signInValidateAdminAccount(
     request: SignInValidateRequestDto
-  ): Promise<SignInValidateResponseDto> {
+  ): Promise<void> {
     const { email } = request;
 
     const adminAccount = await this.prisma.adminAccount.findUnique({
@@ -55,7 +53,7 @@ export class AdminAuthService {
     console.log(`Generated OTP: ${stringOtp}`);
 
     const otpHash = authUtils.hashOTP(stringOtp);
-    const otpExpiration = new Date(Date.now() + 1 * 60 * 1000); // 1 minuto
+    const otpExpiration = new Date(Date.now() + 5 * 60 * 1000); // 1 minuto
 
     // Upsert the admin account auth data with the OTP and expiration time
     const auth = await this.prisma.adminAccountAuth.upsert({
@@ -82,22 +80,18 @@ export class AdminAuthService {
     }
 
     // TODO: enviar o OTP
-
-    return plainToInstance(SignInValidateResponseDto, adminAccount, {
-      excludeExtraneousValues: true,
-    });
   }
 
   //* Sign In the admin account
 
   async signInAdminAccount(request: SignInAdminRequestDto): Promise<void> {
-    const { id, otp } = request;
+    const { email, otp } = request;
 
     // Find the auth data for the admin account
 
     const account = await this.prisma.adminAccount.findUnique({
       where: {
-        id,
+        email,
       },
       include: {
         AdminAccountAuth: true,
@@ -108,7 +102,7 @@ export class AdminAuthService {
 
     if (!account) {
       this.logger.warn(
-        `[${this.correlationId}] - Account ${id} is not registered`
+        `[${this.correlationId}] - Account ${email} is not registered`
       );
       throw new UnauthorizedException(this.unauthorizedErrorMessage);
     }
@@ -117,7 +111,7 @@ export class AdminAuthService {
 
     if (!authData) {
       this.logger.warn(
-        `[${this.correlationId}] - No auth data found for admin account ID ${id}`
+        `[${this.correlationId}] - No auth data found for admin account email ${email}`
       );
       throw new UnauthorizedException(this.unauthorizedErrorMessage);
     }
@@ -126,7 +120,7 @@ export class AdminAuthService {
 
     if (!otpHash) {
       this.logger.warn(
-        `[${this.correlationId}] - No OTP found for admin account ID ${id}`
+        `[${this.correlationId}] - No OTP found for admin account email ${email}`
       );
       throw new UnauthorizedException(this.unauthorizedErrorMessage);
     }
@@ -140,9 +134,9 @@ export class AdminAuthService {
 
     if (!isOtpValid || isOtpExpired) {
       this.logger.warn(
-        `[${this.correlationId}] - OTP validation failed for admin account ID ${id}. Valid: ${isOtpValid}, Expired: ${isOtpExpired}`
+        `[${this.correlationId}] - OTP validation failed for admin account email ${email}. Valid: ${isOtpValid}, Expired: ${isOtpExpired}`
       );
-      void this.removeAdminAccountAuth(id);
+      void this.removeAdminAccountAuth(account.id);
       throw new UnauthorizedException(this.unauthorizedErrorMessage);
     }
 

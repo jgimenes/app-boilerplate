@@ -4,7 +4,6 @@ import { AdminAuthService } from './admin-auth.service';
 import {
   SignInAdminRequestDto,
   SignInValidateRequestDto,
-  SignInValidateResponseDto,
 } from './dto/admin-auth.dto';
 
 @Controller('admin')
@@ -20,11 +19,8 @@ export class AuthController {
   })
   @ApiCreatedResponse({
     description: 'Admin account validated successfully.',
-    type: SignInValidateResponseDto,
   })
-  async signInValidateAdminAccount(
-    @Body() request: SignInValidateRequestDto
-  ): Promise<SignInValidateResponseDto> {
+  async signInValidateAdminAccount(@Body() request: SignInValidateRequestDto) {
     return await this.adminAuthService.signInValidateAdminAccount(request);
   }
 

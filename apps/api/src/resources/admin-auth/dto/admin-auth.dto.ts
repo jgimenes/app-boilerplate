@@ -6,13 +6,8 @@ export class SignInValidateRequestDto extends PickType(AdminAccountDto, [
   'email',
 ] as const) {}
 
-export class SignInValidateResponseDto extends PickType(AdminAccountDto, [
-  'id',
-  'email',
-] as const) {}
-
 export class SignInAdminRequestDto extends PickType(AdminAccountDto, [
-  'id',
+  'email',
 ] as const) {
   @ApiProperty({
     description: 'One Time Password (OTP) for admin sign-in',
