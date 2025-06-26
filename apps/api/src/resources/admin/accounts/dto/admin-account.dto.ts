@@ -61,25 +61,6 @@ export class AdminAccountDto {
   phone?: string;
 
   @ApiProperty({
-    description: 'One-time password for the admin account',
-    example: '123456',
-    type: String,
-    format: 'otp',
-  })
-  @IsOptional()
-  @Length(6, 6)
-  @Expose()
-  otp?: string;
-
-  @ApiProperty({
-    description: 'Expiration date for the one-time password',
-    example: '2024-06-24T12:34:56.789Z',
-    type: Date,
-    required: false,
-  })
-  otpExpiresAt?: Date;
-
-  @ApiProperty({
     description: 'Creation timestamp',
     example: '2024-06-24T12:34:56.789Z',
   })
@@ -109,7 +90,7 @@ export class AdminAccountDto {
   @Transform(({ value }: { value: Date }) =>
     dateTimeUtils.toLocalDateTime(value)
   )
-  deletedAt?: Date;
+  deletedAt?: Date | undefined;
 }
 
 export class AdminAccountResponseDto extends PartialType(

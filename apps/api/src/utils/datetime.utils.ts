@@ -5,9 +5,9 @@ export class dateTimeUtils {
   private static readonly DATE_FORMAT = 'dd/MM/yyyy HH:mm:ss xxx';
   private static readonly LOCALE = ptBR;
 
-  static toLocalDateTime(value: Date): string | null {
+  static toLocalDateTime(value: Date): string | undefined {
     if (!value) {
-      return null;
+      return undefined;
     }
     return format(value, this.DATE_FORMAT, { locale: this.LOCALE });
   }

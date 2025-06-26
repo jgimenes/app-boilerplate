@@ -12,15 +12,36 @@ datasource db {
 }
 
 model AdminAccount {
-  id           String    @id @default(ulid())
-  name         String
-  email        String    @unique
-  phone        String?
-  otp          String?
-  otpExpiresAt DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  deletedAt    DateTime?
+  id        String      @id @default(ulid())
+  name      String
+  email     String      @unique
+  phone     String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  deletedAt DateTime?
+  AdminAuth AdminAuth[]
 
   @@map("admin_accounts")
+}
+
+model AdminAuth {
+  id                    String    @id @default(ulid())
+  adminId               String
+  otp                   String?
+  otpExpiresAt          DateTime?
+  accessToken           String?
+  accessTokenExpiresAt  DateTime?
+  refreshToken          String?
+  refreshTokenExpiresAt DateTime?
+  jti                   String?
+  jtiExpiresAt          DateTime?
+  provider              String?
+  providerId            String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  deletedAt             DateTime?
+
+  admin AdminAccount @relation(fields: [adminId], references: [id])
+
+  @@map("admin_authentications")
 }
