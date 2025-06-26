@@ -9,6 +9,7 @@ onlyBuiltDependencies:
   - '@scarf/scarf'
   - '@swc/core'
   - '@tailwindcss/oxide'
+  - bcrypt
   - esbuild
   - lefthook
   - prisma
