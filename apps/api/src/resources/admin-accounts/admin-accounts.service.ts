@@ -8,7 +8,7 @@ import {
 import { plainToInstance } from 'class-transformer';
 import { MetadataDto } from 'src/common/dto/metadata.dto';
 import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
-import { PrismaService } from '../../../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import {
   AdminAccountResponseDto,
   AdminAccountsDto,
@@ -24,8 +24,8 @@ import {
 } from './dto/update-admin-account';
 
 @Injectable()
-export class AccountsService {
-  private readonly logger = new Logger(AccountsService.name);
+export class AdminAccountsService {
+  private readonly logger = new Logger(AdminAccountsService.name);
   constructor(private readonly prisma: PrismaService) {}
 
   //* Create Admin Account.
@@ -48,7 +48,6 @@ export class AccountsService {
       update: {
         name,
         phone,
-
         deletedAt: null,
       },
       create: {

@@ -127,9 +127,9 @@ exports.Prisma.AdminAccountScalarFieldEnum = {
   deletedAt: 'deletedAt'
 };
 
-exports.Prisma.AdminAuthScalarFieldEnum = {
+exports.Prisma.AdminAccountAuthScalarFieldEnum = {
   id: 'id',
-  adminId: 'adminId',
+  adminAccountId: 'adminAccountId',
   otp: 'otp',
   otpExpiresAt: 'otpExpiresAt',
   accessToken: 'accessToken',
@@ -158,7 +158,7 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.ModelName = {
   AdminAccount: 'AdminAccount',
-  AdminAuth: 'AdminAuth'
+  AdminAccountAuth: 'AdminAccountAuth'
 };
 
 /**

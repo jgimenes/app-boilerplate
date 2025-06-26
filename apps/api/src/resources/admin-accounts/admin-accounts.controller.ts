@@ -21,7 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { HttpExceptionDto } from 'src/common/dto/http-exception.dto';
 import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
-import { AccountsService } from './accounts.service';
+import { AdminAccountsService } from './admin-accounts.service';
 import {
   AdminAccountResponseDto,
   AdminAccountsResponseDto,
@@ -34,8 +34,8 @@ import { UpdateAdminAccountRequestDto } from './dto/update-admin-account';
 
 @Controller('admin/accounts')
 @ApiTags('Admin Accounts')
-export class AccountsController {
-  constructor(private readonly accountsService: AccountsService) {}
+export class AdminAccountsController {
+  constructor(private readonly adminAccountsService: AdminAccountsService) {}
 
   //* Create admin account
 
@@ -55,7 +55,7 @@ export class AccountsController {
     type: HttpExceptionDto,
   })
   createAdminAccount(@Body() request: CreateAdminAccountRequestDto) {
-    return this.accountsService.createAdminAccount(request);
+    return this.adminAccountsService.createAdminAccount(request);
   }
 
   @Get()
@@ -71,7 +71,7 @@ export class AccountsController {
   findAllAdminAccounts(
     @Query() request: PaginationQueryDTO
   ): Promise<AdminAccountsResponseDto> {
-    return this.accountsService.findAllAdminAccounts(request);
+    return this.adminAccountsService.findAllAdminAccounts(request);
   }
 
   @Get(':id')
@@ -89,7 +89,7 @@ export class AccountsController {
     type: HttpExceptionDto,
   })
   findAdminAccountById(@Param('id') id: string) {
-    return this.accountsService.findAdminAccountById(id);
+    return this.adminAccountsService.findAdminAccountById(id);
   }
 
   @ApiOperation({
@@ -111,7 +111,7 @@ export class AccountsController {
     @Param('id') id: string,
     @Body() request: UpdateAdminAccountRequestDto
   ) {
-    return this.accountsService.updateAdminAccount(id, request);
+    return this.adminAccountsService.updateAdminAccount(id, request);
   }
 
   @Delete(':id')
@@ -130,7 +130,7 @@ export class AccountsController {
     type: HttpExceptionDto,
   })
   async deleteAdminAccount(@Param('id') id: string): Promise<void> {
-    await this.accountsService.deleteAdminAccount(id);
+    await this.adminAccountsService.deleteAdminAccount(id);
   }
 
   @Delete(':id/remove')
@@ -149,6 +149,6 @@ export class AccountsController {
     type: HttpExceptionDto,
   })
   async removeAdminAccount(@Param('id') id: string): Promise<void> {
-    await this.accountsService.removeAdminAccount(id);
+    await this.adminAccountsService.removeAdminAccount(id);
   }
 }

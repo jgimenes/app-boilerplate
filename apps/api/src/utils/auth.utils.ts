@@ -1,7 +1,7 @@
 import * as bcrypt from 'bcrypt';
 import { randomInt } from 'crypto';
 
-export class otpUtils {
+export class authUtils {
   //* Generates a random OTP (One Time Password) of specified length
 
   static generateOTP(length: number = 6): string {
