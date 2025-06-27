@@ -28,12 +28,9 @@ model AdminAccountAuth {
   adminAccountId        String    @id
   otp                   String?
   otpExpiresAt          DateTime?
-  accessToken           String?
-  accessTokenExpiresAt  DateTime?
+  refreshTokenId        String?   @unique
   refreshToken          String?
   refreshTokenExpiresAt DateTime?
-  jti                   String?
-  jtiExpiresAt          DateTime?
   provider              String?
   providerId            String?
   createdAt             DateTime  @default(now())

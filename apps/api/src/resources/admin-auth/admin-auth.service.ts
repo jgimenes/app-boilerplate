@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { randomUUID } from 'crypto';
 import { ClsService } from 'nestjs-cls';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { authUtils } from 'src/utils/auth.utils';
@@ -40,6 +41,9 @@ export class AdminAuthService {
       where: {
         email,
       },
+      include: {
+        AdminAccountAuth: true, // Include auth data to check if it exists
+      },
     });
 
     if (!adminAccount || adminAccount.deletedAt) {
@@ -47,6 +51,20 @@ export class AdminAuthService {
         `[${this.correlationId}] - Admin account with email ${email} not found or deleted`
       );
       throw new UnauthorizedException(this.unauthorizedErrorMessage);
+    }
+
+    const authData = adminAccount.AdminAccountAuth;
+
+    // Check if the admin account already has a valid OTP, if so, skip OTP generation and same
+    if (
+      authData &&
+      authData.otpExpiresAt &&
+      authData.otpExpiresAt > new Date()
+    ) {
+      console.log(
+        `[${this.correlationId}] - Admin account with email ${email} already has a valid OTP`
+      );
+      return;
     }
 
     const stringOtp = authUtils.generateOTP();
@@ -157,6 +175,47 @@ export class AdminAuthService {
     );
 
     console.log(`Generated JWT Token: ${token}`);
+  }
+
+  //* Get Refresh Token
+
+  async getRefreshToken(id: string): Promise<string> {
+    const jti = randomUUID();
+    const token = this.jwtService.sign(
+      { sub: id, jti },
+      {
+        expiresIn: '7d',
+      }
+    );
+
+    const refreshTokenExpiresAt = new Date(
+      Date.now() + 1000 * 60 * 60 * 24 * 7
+    ); // 7 dias
+
+    // Upsert the refresh token in the database
+    const refreshToken = await this.prisma.adminAccountAuth.upsert({
+      where: { adminAccountId: id },
+      update: {
+        refreshTokenId: jti,
+        refreshToken: token,
+        refreshTokenExpiresAt,
+      },
+      create: {
+        adminAccountId: id,
+        refreshTokenId: jti,
+        refreshToken: token,
+        refreshTokenExpiresAt,
+      },
+    });
+
+    if (!refreshToken) {
+      this.logger.error(
+        `[${this.correlationId}] - Failed to upsert refresh token for admin account ID ${id}`
+      );
+      throw new InternalServerErrorException();
+    }
+
+    return token; // Return the generated refresh token
   }
 
   //* Remove the admin account auth data
