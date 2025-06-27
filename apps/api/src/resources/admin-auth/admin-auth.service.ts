@@ -141,6 +141,22 @@ export class AdminAuthService {
     }
 
     // TODO: Generate and return a JWT token for the admin account
+
+    const token: string = this.jwtService.sign(
+      {
+        sub: account.id,
+        name: account.name,
+        email: account.email,
+        phone: account.phone,
+        iss: 'your-issuer', // Define your issuer
+        aud: 'your-audience', // Define your audience
+      },
+      {
+        expiresIn: '1h', // Define the expiration time for the token
+      }
+    );
+
+    console.log(`Generated JWT Token: ${token}`);
   }
 
   //* Remove the admin account auth data
