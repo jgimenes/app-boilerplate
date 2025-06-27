@@ -5,12 +5,14 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { plainToInstance } from 'class-transformer';
 import { randomUUID } from 'crypto';
 import { ClsService } from 'nestjs-cls';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { authUtils } from 'src/utils/auth.utils';
 import {
   SignInAdminRequestDto,
+  SignInAdminResponseDto,
   SignInValidateRequestDto,
 } from './dto/admin-auth.dto';
 
@@ -56,11 +58,7 @@ export class AdminAuthService {
     const authData = adminAccount.AdminAccountAuth;
 
     // Check if the admin account already has a valid OTP, if so, skip OTP generation and same
-    if (
-      authData &&
-      authData.otpExpiresAt &&
-      authData.otpExpiresAt > new Date()
-    ) {
+    if (authData?.otpExpiresAt && authData.otpExpiresAt > new Date()) {
       console.log(
         `[${this.correlationId}] - Admin account with email ${email} already has a valid OTP`
       );
@@ -102,7 +100,9 @@ export class AdminAuthService {
 
   //* Sign In the admin account
 
-  async signInAdminAccount(request: SignInAdminRequestDto): Promise<void> {
+  async signInAdminAccount(
+    request: SignInAdminRequestDto
+  ): Promise<SignInAdminResponseDto> {
     const { email, otp } = request;
 
     // Find the auth data for the admin account
@@ -158,23 +158,50 @@ export class AdminAuthService {
       throw new UnauthorizedException(this.unauthorizedErrorMessage);
     }
 
-    // TODO: Generate and return a JWT token for the admin account
+    const accessToken = await this.getAccessToken(
+      account.id,
+      account.name,
+      account.email,
+      account.phone
+    );
+    const refreshToken = await this.getRefreshToken(account.id);
 
-    const token: string = this.jwtService.sign(
+    return plainToInstance(SignInAdminResponseDto, {
+      accessToken,
+      refreshToken,
+    });
+  }
+
+  //* Get Access Token
+
+  getAccessToken(
+    sub: string,
+    name: string,
+    email: string,
+    phone: string | undefined | null
+  ): Promise<string> {
+    const accessToken: string = this.jwtService.sign(
       {
-        sub: account.id,
-        name: account.name,
-        email: account.email,
-        phone: account.phone,
+        sub,
+        name,
+        email,
+        phone,
         iss: 'your-issuer', // Define your issuer
         aud: 'your-audience', // Define your audience
       },
       {
-        expiresIn: '1h', // Define the expiration time for the token
+        expiresIn: '5m',
       }
     );
 
-    console.log(`Generated JWT Token: ${token}`);
+    if (!accessToken) {
+      this.logger.error(
+        `[${this.correlationId}] - Failed to generate JWT token for admin account email ${email}`
+      );
+      throw new InternalServerErrorException();
+    }
+
+    return Promise.resolve(accessToken);
   }
 
   //* Get Refresh Token
@@ -219,6 +246,7 @@ export class AdminAuthService {
   }
 
   //* Remove the admin account auth data
+
   async removeAdminAccountAuth(id: string): Promise<void> {
     await this.prisma.adminAccountAuth.delete({
       where: { adminAccountId: id },

@@ -17,3 +17,17 @@ export class SignInAdminRequestDto extends PickType(AdminAccountDto, [
   @IsNotEmpty()
   otp: string;
 }
+
+export class SignInAdminResponseDto {
+  @ApiProperty({
+    description: 'Access token for admin authentication',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
+  accessToken: string;
+
+  @ApiProperty({
+    description: 'Refresh token for admin authentication',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
+  refreshToken: string;
+}
