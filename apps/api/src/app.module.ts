@@ -12,8 +12,8 @@ import { HttpExceptionsFilter } from './filters/http-exception.filter';
 import { CorrelationIdMiddleware } from './middleware/correlation-id.middleware'; // <-- importe aqui
 import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
-import { AdminAccountsModule } from './resources/admin-accounts/admin-accounts.module';
-import { AdminAuthModule } from './resources/admin-auth/admin-auth.module';
+import { AccountsModule } from './resources/accounts/accounts.module';
+import { AuthModule } from './resources/auth/auth.module';
 
 @Module({
   imports: [
@@ -23,8 +23,8 @@ import { AdminAuthModule } from './resources/admin-auth/admin-auth.module';
       middleware: { mount: true }, // mantém o contexto CLS ativo por request
     }),
     PrismaModule,
-    AdminAccountsModule,
-    AdminAuthModule,
+    AccountsModule,
+    AuthModule,
     PrismaModule,
   ],
   controllers: [AppController],

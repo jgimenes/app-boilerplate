@@ -11,7 +11,7 @@ import {
 import { MetadataDto } from 'src/common/dto/metadata.dto';
 import { dateTimeUtils } from 'src/utils/datetime.utils';
 
-export class AdminAccountDto {
+export class AccountDto {
   @ApiProperty({
     description: 'Unique identifier for the admin account',
     example: '01JYHEX3RRFWY61F41PYC39HJM',
@@ -93,8 +93,8 @@ export class AdminAccountDto {
   deletedAt?: Date | undefined;
 }
 
-export class AdminAccountResponseDto extends PartialType(
-  PickType(AdminAccountDto, [
+export class AccountResponseDto extends PartialType(
+  PickType(AccountDto, [
     'id',
     'name',
     'email',
@@ -105,20 +105,14 @@ export class AdminAccountResponseDto extends PartialType(
   ] as const)
 ) {}
 
-export class AdminAccountsDto extends PartialType(
-  PickType(AdminAccountDto, [
-    'id',
-    'name',
-    'email',
-    'phone',
-    'createdAt',
-  ] as const)
+export class AccountsDto extends PartialType(
+  PickType(AccountDto, ['id', 'name', 'email', 'phone', 'createdAt'] as const)
 ) {}
 
-export class AdminAccountsResponseDto {
+export class AccountsResponseDto {
   @ApiProperty({ type: MetadataDto })
   metadata: MetadataDto;
 
-  @ApiProperty({ type: [AdminAccountsDto] })
-  accounts: AdminAccountsDto[];
+  @ApiProperty({ type: [AccountsDto] })
+  accounts: AccountsDto[];
 }

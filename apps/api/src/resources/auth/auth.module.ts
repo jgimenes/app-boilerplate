@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { PrismaModule } from 'src/prisma/prisma.module';
-import { AuthController } from './admin-auth.controller';
-import { AdminAuthService } from './admin-auth.service';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 @Module({
   imports: [
     PrismaModule,
@@ -14,7 +14,7 @@ import { AdminAuthService } from './admin-auth.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AdminAuthService],
+  providers: [AuthService],
 })
-export class AdminAuthModule {}
+export class AuthModule {}
 export const jwtSecret = process.env.JWT_SECRET;

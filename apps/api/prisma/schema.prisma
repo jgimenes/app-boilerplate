@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
   output   = "./generated/prisma"
@@ -11,21 +8,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model AdminAccount {
-  id               String            @id @default(ulid())
-  name             String
-  email            String            @unique
-  phone            String?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  deletedAt        DateTime?
-  AdminAccountAuth AdminAccountAuth?
+model Account {
+  id        String    @id @default(ulid())
+  name      String
+  email     String    @unique
+  phone     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
-  @@map("admin_accounts")
+  auth Auth?
+
+  @@map("accounts")
 }
 
-model AdminAccountAuth {
-  adminAccountId        String    @id
+model Auth {
+  accountId             String    @id
   otp                   String?
   otpExpiresAt          DateTime?
   refreshTokenId        String?   @unique
@@ -36,7 +34,7 @@ model AdminAccountAuth {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  adminAccount AdminAccount @relation(fields: [adminAccountId], references: [id], onDelete: Cascade)
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
-  @@map("admin_account_authentication")
+  @@map("authentication")
 }
