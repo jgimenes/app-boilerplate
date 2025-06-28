@@ -13,6 +13,7 @@ export function setupSwagger(app: INestApplication) {
     )
     .setVersion('1.0.0')
     .addBearerAuth()
+    .addTag('Auth', 'Endpoints for user authentication')
     .addTag('Admin Accounts', 'Endpoints for managing admin accounts')
     .build();
 

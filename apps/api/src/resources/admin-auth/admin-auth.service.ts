@@ -219,18 +219,20 @@ export class AdminAuthService {
       Date.now() + 1000 * 60 * 60 * 24 * 7
     ); // 7 dias
 
+    const hashedToken = authUtils.hashOTP(token);
+
     // Upsert the refresh token in the database
     const refreshToken = await this.prisma.adminAccountAuth.upsert({
       where: { adminAccountId: id },
       update: {
         refreshTokenId: jti,
-        refreshToken: token,
+        refreshToken: hashedToken,
         refreshTokenExpiresAt,
       },
       create: {
         adminAccountId: id,
         refreshTokenId: jti,
-        refreshToken: token,
+        refreshToken: hashedToken,
         refreshTokenExpiresAt,
       },
     });
@@ -248,7 +250,11 @@ export class AdminAuthService {
   //* Remove the admin account auth data
 
   async removeAdminAccountAuth(id: string): Promise<void> {
-    await this.prisma.adminAccountAuth.delete({
+    await this.prisma.adminAccountAuth.update({
+      data: {
+        otp: null,
+        otpExpiresAt: null,
+      },
       where: { adminAccountId: id },
     });
   }

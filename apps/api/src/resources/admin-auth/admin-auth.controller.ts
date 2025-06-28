@@ -1,8 +1,15 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiCreatedResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { HttpExceptionDto } from 'src/common/dto/http-exception.dto';
 import { AdminAuthService } from './admin-auth.service';
 import {
   SignInAdminRequestDto,
+  SignInAdminResponseDto,
   SignInValidateRequestDto,
 } from './dto/admin-auth.dto';
 
@@ -20,8 +27,12 @@ export class AuthController {
   @ApiCreatedResponse({
     description: 'Admin account validated successfully.',
   })
-  async signInValidateAdminAccount(@Body() request: SignInValidateRequestDto) {
-    return await this.adminAuthService.signInValidateAdminAccount(request);
+  @ApiUnauthorizedResponse({
+    description: 'Unauthorized access. Invalid email or account not found.',
+    type: HttpExceptionDto,
+  })
+  signInValidateAdminAccount(@Body() request: SignInValidateRequestDto) {
+    return this.adminAuthService.signInValidateAdminAccount(request);
   }
 
   @Post('sign-in')
@@ -31,10 +42,15 @@ export class AuthController {
   })
   @ApiCreatedResponse({
     description: 'Admin account signed in successfully.',
+    type: SignInAdminResponseDto,
   })
-  async signInAdminAccount(
+  @ApiUnauthorizedResponse({
+    description: 'Unauthorized access. Invalid email or account not found.',
+    type: HttpExceptionDto,
+  })
+  signInAdminAccount(
     @Body() request: SignInAdminRequestDto
-  ): Promise<void> {
-    await this.adminAuthService.signInAdminAccount(request);
+  ): Promise<SignInAdminResponseDto> {
+    return this.adminAuthService.signInAdminAccount(request);
   }
 }
