@@ -3,6 +3,7 @@ import {
   InternalServerErrorException,
   Logger,
   UnauthorizedException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { plainToInstance } from 'class-transformer';
@@ -14,7 +15,6 @@ import {
   OtpRequestDto,
   SignInRequestDto,
   SignInResponseDto,
-  SignOutRequestDto,
 } from './dto/auth.dto';
 
 @Injectable()
@@ -49,7 +49,9 @@ export class AuthService {
       this.logger.warn(
         `[${this.correlationId}] - Admin account with email ${email} not found or deleted`
       );
-      throw new UnauthorizedException(this.unauthorizedErrorMessage);
+      throw new UnprocessableEntityException(
+        `Admin account with email ${email} not found or deleted`
+      );
     }
 
     const authData = account?.auth;
@@ -169,20 +171,18 @@ export class AuthService {
 
   //* Sign Out the admin account
 
-  async signOut(request: SignOutRequestDto): Promise<void> {
-    const { email } = request;
-
+  async signOut(id: string): Promise<void> {
     // Find the account by email
     const account = await this.prisma.account.findUnique({
-      where: { email },
-      include: { auth: true },
+      where: { id },
     });
 
+    console.log(account);
     if (!account) {
       this.logger.warn(
-        `[${this.correlationId}] - Admin account with email ${email} not found`
+        `[${this.correlationId}] - Admin account with email ${id} not found`
       );
-      throw new UnauthorizedException(this.unauthorizedErrorMessage);
+      throw new UnprocessableEntityException(`Admin account not found`);
     }
 
     // Remove the OTP and refresh token data
@@ -192,13 +192,14 @@ export class AuthService {
     await this.prisma.auth.update({
       where: { accountId: account.id },
       data: {
+        refreshTokenId: null,
         refreshToken: null,
         refreshTokenExpiresAt: null,
       },
     });
 
     this.logger.log(
-      `[${this.correlationId}] - Admin account with email ${email} signed out successfully`
+      `[${this.correlationId}] - Admin account with id ${id} signed out successfully`
     );
   }
 

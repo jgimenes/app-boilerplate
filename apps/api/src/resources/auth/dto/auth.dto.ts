@@ -27,7 +27,3 @@ export class SignInResponseDto {
   })
   refreshToken: string;
 }
-
-export class SignOutRequestDto extends PickType(AccountDto, [
-  'email',
-] as const) {}

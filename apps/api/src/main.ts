@@ -29,9 +29,9 @@ async function bootstrap() {
   //* Validation Pipe
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
-      transform: true,
-      transformOptions: { groups: ['transform'] },
+      whitelist: true, // Remove propriedades não definidas no DTO
+      forbidNonWhitelisted: true, // Lança erro se propriedades extras forem enviadas
+      transform: true, // Faz a conversão automática (e.g., string → number)
     })
   );
 

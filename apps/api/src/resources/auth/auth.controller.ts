@@ -1,10 +1,18 @@
-import { Body, Controller, Delete, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  HttpCode,
+  Param,
+  Post,
+} from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { HttpExceptionDto } from 'src/common/dto/http-exception.dto';
 import { AuthService } from './auth.service';
@@ -12,7 +20,6 @@ import {
   OtpRequestDto,
   SignInRequestDto,
   SignInResponseDto,
-  SignOutRequestDto,
 } from './dto/auth.dto';
 
 @Controller('accounts')
@@ -28,11 +35,27 @@ export class AuthController {
   @ApiCreatedResponse({
     description: 'Admin account validated successfully.',
   })
-  @ApiUnauthorizedResponse({
-    description: 'Unauthorized access. Invalid email or account not found.',
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid input data.',
     type: HttpExceptionDto,
   })
   otpRequest(@Body() request: OtpRequestDto) {
+    return this.authService.otpRequest(request);
+  }
+
+  @Post('sign-in/resend-otp')
+  @ApiOperation({
+    summary: 'Resend OTP for Sign In',
+    description: 'Resend the OTP for the account during sign-in.',
+  })
+  @ApiCreatedResponse({
+    description: 'OTP resent successfully.',
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid input data.',
+    type: HttpExceptionDto,
+  })
+  otpResend(@Body() request: OtpRequestDto) {
     return this.authService.otpRequest(request);
   }
 
@@ -53,15 +76,20 @@ export class AuthController {
     return this.authService.signIn(request);
   }
 
-  @Delete('sign-out')
+  @Delete('sign-out/:id')
   @ApiOperation({
     summary: 'Sign Out Account',
-    description: 'Signs out the account using the provided email.',
+    description: 'Signs out the account using the provided id.',
   })
+  @HttpCode(204)
   @ApiNoContentResponse({
     description: 'Account signed out successfully.',
   })
-  signOutAccount(@Body() request: SignOutRequestDto): Promise<void> {
-    return this.authService.signOut(request);
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid input data.',
+    type: HttpExceptionDto,
+  })
+  signOutAccount(@Param() id: string) {
+    return this.authService.signOut(id);
   }
 }
