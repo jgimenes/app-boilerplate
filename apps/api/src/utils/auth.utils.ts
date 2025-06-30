@@ -17,13 +17,13 @@ export class authUtils {
 
   //* Hashed OTP with bcrypt
 
-  static hashOTP(otp: string, saltRounds = 10): string {
+  static hash(otp: string, saltRounds = 10): string {
     return bcrypt.hashSync(otp, saltRounds);
   }
 
   //* Compares an OTP with its hash
 
-  static async compareOTP(otp: string, hash: string): Promise<boolean> {
+  static async compare(otp: string, hash: string): Promise<boolean> {
     return bcrypt.compare(otp, hash);
   }
 }

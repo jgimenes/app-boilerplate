@@ -33,9 +33,6 @@ export class AuthService {
     return typeof rawCorrelationId === 'string' ? rawCorrelationId : 'N/A';
   }
 
-  //Todo: Sign On Account
-  //Todo: Verify Account
-
   //* This method is used get OTP during sign-in
 
   async otpRequest(request: OtpRequestDto): Promise<void> {
@@ -50,19 +47,19 @@ export class AuthService {
 
     if (!account || account.deletedAt) {
       this.logger.warn(
-        `[${this.correlationId}] - Admin account with email ${email} not found or deleted`
+        `[${this.correlationId}] - Account with email ${email} not found or deleted`
       );
       throw new UnprocessableEntityException(
-        `Admin account with email ${email} not found or deleted`
+        `Account with email ${email} not found or deleted`
       );
     }
 
     const authData = account?.auth;
 
-    // Check if the admin account already has a valid OTP, if so, skip OTP generation and same
+    // Check if the account already has a valid OTP, if so, skip OTP generation and same
     if (authData?.otpExpiresAt && authData.otpExpiresAt > new Date()) {
       console.log(
-        `[${this.correlationId}] - Admin account with email ${email} already has a valid OTP`
+        `[${this.correlationId}] - Account with email ${email} already has a valid OTP`
       );
       return;
     }
@@ -70,10 +67,10 @@ export class AuthService {
     const stringOtp = authUtils.generateOTP();
     console.log(`Generated OTP: ${stringOtp}`);
 
-    const otpHash = authUtils.hashOTP(stringOtp);
+    const otpHash = authUtils.hash(stringOtp);
     const otpExpiration = new Date(Date.now() + 5 * 60 * 1000); // 1 minuto
 
-    // Upsert the admin account auth data with the OTP and expiration time
+    // Upsert the account auth data with the OTP and expiration time
     const auth = await this.prisma.auth.upsert({
       where: {
         accountId: account.id,
@@ -92,7 +89,7 @@ export class AuthService {
     // Check if the auth data was successfully created or updated
     if (!auth) {
       this.logger.error(
-        `[${this.correlationId}] - Failed to upsert admin account auth for email ${email}`
+        `[${this.correlationId}] - Failed to upsert account auth for email ${email}`
       );
       throw new InternalServerErrorException();
     }
@@ -100,12 +97,12 @@ export class AuthService {
     // TODO: enviar o OTP
   }
 
-  //* Sign In the admin account
+  //* Sign In the account
 
   async signIn(request: SignInRequestDto): Promise<SignInResponseDto> {
     const { email, otp } = request;
 
-    // Find the auth data for the admin account
+    // Find the auth data for the account
 
     const account = await this.prisma.account.findUnique({
       where: {
@@ -129,7 +126,7 @@ export class AuthService {
 
     if (!authData) {
       this.logger.warn(
-        `[${this.correlationId}] - No auth data found for admin account email ${email}`
+        `[${this.correlationId}] - No auth data found for account email ${email}`
       );
       throw new UnauthorizedException(this.unauthorizedErrorMessage);
     }
@@ -138,13 +135,13 @@ export class AuthService {
 
     if (!otpHash) {
       this.logger.warn(
-        `[${this.correlationId}] - No OTP found for admin account email ${email}`
+        `[${this.correlationId}] - No OTP found for account email ${email}`
       );
       throw new UnauthorizedException(this.unauthorizedErrorMessage);
     }
 
     // Validate the OTP and check if it has expired
-    const isOtpValid = await authUtils.compareOTP(otp, otpHash);
+    const isOtpValid = await authUtils.compare(otp, otpHash);
 
     const isOtpExpired = authData?.otpExpiresAt
       ? authData.otpExpiresAt < new Date()
@@ -152,7 +149,7 @@ export class AuthService {
 
     if (!isOtpValid || isOtpExpired) {
       this.logger.warn(
-        `[${this.correlationId}] - OTP validation failed for admin account email ${email}. Valid: ${isOtpValid}, Expired: ${isOtpExpired}`
+        `[${this.correlationId}] - OTP validation failed for account email ${email}. Valid: ${isOtpValid}, Expired: ${isOtpExpired}`
       );
       void this.removeOtpData(account.id);
       throw new UnauthorizedException(this.unauthorizedErrorMessage);
@@ -172,7 +169,11 @@ export class AuthService {
     });
   }
 
-  //* Sign Out the admin account
+  //Todo: Sign On Account
+  //Todo: Verify Account
+  //Todo: Refresh the account access token
+
+  //* Sign Out the account
 
   async signOut(id: string): Promise<void> {
     // Find the account by email
@@ -183,9 +184,9 @@ export class AuthService {
     console.log(account);
     if (!account) {
       this.logger.warn(
-        `[${this.correlationId}] - Admin account with email ${id} not found`
+        `[${this.correlationId}] - Account with email ${id} not found`
       );
-      throw new UnprocessableEntityException(`Admin account not found`);
+      throw new UnprocessableEntityException(`Account not found`);
     }
 
     // Remove the OTP and refresh token data
@@ -202,7 +203,7 @@ export class AuthService {
     });
 
     this.logger.log(
-      `[${this.correlationId}] - Admin account with id ${id} signed out successfully`
+      `[${this.correlationId}] - Account with id ${id} signed out successfully`
     );
   }
 
@@ -230,7 +231,7 @@ export class AuthService {
 
     if (!accessToken) {
       this.logger.error(
-        `[${this.correlationId}] - Failed to generate JWT token for admin account email ${email}`
+        `[${this.correlationId}] - Failed to generate JWT token for account email ${email}`
       );
       throw new InternalServerErrorException();
     }
@@ -253,7 +254,7 @@ export class AuthService {
       Date.now() + 1000 * 60 * 60 * 24 * 7
     ); // 7 dias
 
-    const hashedToken = authUtils.hashOTP(token);
+    const hashedToken = authUtils.hash(token);
 
     // Upsert the refresh token in the database
     const refreshToken = await this.prisma.auth.upsert({
@@ -273,7 +274,7 @@ export class AuthService {
 
     if (!refreshToken) {
       this.logger.error(
-        `[${this.correlationId}] - Failed to upsert refresh token for admin account ID ${id}`
+        `[${this.correlationId}] - Failed to upsert refresh token for account ID ${id}`
       );
       throw new InternalServerErrorException();
     }

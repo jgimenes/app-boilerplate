@@ -138,7 +138,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/jgimenes/Documents/Projetos/app-boilerplate/apps/api/prisma/generated/prisma",
+      "value": "C:\\projetos\\app-boilerplate\\apps\\api\\prisma\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -147,12 +147,12 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "darwin",
+        "value": "windows",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/jgimenes/Documents/Projetos/app-boilerplate/apps/api/prisma/schema.prisma",
+    "sourceFilePath": "C:\\projetos\\app-boilerplate\\apps\\api\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

@@ -40,6 +40,7 @@ export class AccountsController {
   @ApiOperation({
     summary: 'Create a new account',
     description: 'This endpoint allows the creation of a new account.',
+    tags: ['Accounts'],
   })
   @ApiBody({ type: CreateAccountRequestDto, required: true })
   @ApiCreatedResponse({

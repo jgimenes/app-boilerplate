@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
-import { setupSwagger } from './config/swagger.config';
+import { adminSetupSwagger, publicSetupSwagger } from './config/swagger.config';
 import { HttpExceptionsFilter } from './filters/http-exception.filter';
 
 async function bootstrap() {
@@ -35,9 +35,13 @@ async function bootstrap() {
     })
   );
 
-  //* Setup Swagger documentation
+  //* Setup Swagger documentation Public
 
-  setupSwagger(app);
+  publicSetupSwagger(app);
+
+  //* Setup Swagger documentation Admin
+
+  adminSetupSwagger(app);
 
   //* Exception Filter Enable
 
