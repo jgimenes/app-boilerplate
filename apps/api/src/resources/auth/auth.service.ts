@@ -33,6 +33,9 @@ export class AuthService {
     return typeof rawCorrelationId === 'string' ? rawCorrelationId : 'N/A';
   }
 
+  //Todo: Sign On Account
+  //Todo: Verify Account
+
   //* This method is used get OTP during sign-in
 
   async otpRequest(request: OtpRequestDto): Promise<void> {
