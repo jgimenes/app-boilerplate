@@ -33,6 +33,8 @@ export class AuthService {
     return typeof rawCorrelationId === 'string' ? rawCorrelationId : 'N/A';
   }
 
+  //Todo: Sign On Account
+
   //* This method is used get OTP during sign-in
 
   async otpRequest(request: OtpRequestDto): Promise<void> {
@@ -169,7 +171,6 @@ export class AuthService {
     });
   }
 
-  //Todo: Sign On Account
   //Todo: Verify Account
   //Todo: Refresh the account access token
 
