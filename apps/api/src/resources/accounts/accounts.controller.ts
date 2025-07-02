@@ -36,6 +36,8 @@ export class AccountsController {
 
   //* Create account
 
+  //Todo: Add Roles and Permissions
+
   @Post()
   @ApiOperation({
     summary: 'Create a new account',

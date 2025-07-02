@@ -24,6 +24,17 @@ export class AccountDto {
   id: string;
 
   @ApiProperty({
+    description: 'Tenant ID associated with the admin account',
+    example: '01JYHEX3RRFWY61F41PYC39HJM',
+    type: String,
+    format: 'ulid',
+  })
+  @IsString()
+  @Length(26, 26)
+  @Expose()
+  tenantId?: string;
+
+  @ApiProperty({
     description: 'Name for the admin account',
     example: 'John Doe',
     type: String,
