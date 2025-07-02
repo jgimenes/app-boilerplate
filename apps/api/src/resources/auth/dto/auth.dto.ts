@@ -26,4 +26,10 @@ export class SignInResponseDto {
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
   })
   refreshToken: string;
+
+  @ApiProperty({
+    description: 'Expiration time of the access token in seconds',
+    example: 3600,
+  })
+  expiresAt: number;
 }

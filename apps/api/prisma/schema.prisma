@@ -17,11 +17,14 @@ model Tenant {
   updatedAt           DateTime  @updatedAt
   deletedAt           DateTime?
 
+  accounts Account[] // Relação reversa
+
   @@map("tenants")
 }
 
 model Account {
   id        String    @id @default(ulid())
+  tenantId  String?
   name      String
   email     String    @unique
   phone     String?
@@ -30,7 +33,8 @@ model Account {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  auth Auth?
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  auth   Auth?
 
   @@map("accounts")
 }

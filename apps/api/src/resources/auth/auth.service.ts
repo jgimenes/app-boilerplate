@@ -164,10 +164,12 @@ export class AuthService {
       account.phone
     );
     const refreshToken = await this.getRefreshToken(account.id);
+    const expiresAt = Math.floor(Date.now() / 1000) + 5 * 60; // 5 minutes
 
     return plainToInstance(SignInResponseDto, {
       accessToken,
       refreshToken,
+      expiresAt,
     });
   }
 
