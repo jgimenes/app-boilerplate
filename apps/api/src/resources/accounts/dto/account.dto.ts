@@ -2,6 +2,7 @@ import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { Expose, Transform } from 'class-transformer';
 import {
   IsEmail,
+  IsEnum,
   IsMobilePhone,
   IsNotEmpty,
   IsOptional,
@@ -9,6 +10,7 @@ import {
   Length,
 } from 'class-validator';
 import { MetadataDto } from 'src/common/dto/metadata.dto';
+import { AccountRoleEnum } from 'src/common/enums/accuount-role.enum';
 import { dateTimeUtils } from 'src/utils/datetime.utils';
 
 export class AccountDto {
@@ -70,6 +72,16 @@ export class AccountDto {
   @IsMobilePhone(undefined, { strictMode: false })
   @Expose()
   phone?: string;
+
+  @ApiProperty({
+    description: 'Role of the account',
+    example: 'SYSADMIN',
+    type: AccountRoleEnum,
+    enumName: 'AccountRoleEnum',
+  })
+  @IsEnum(AccountRoleEnum)
+  @Expose()
+  role?: AccountRoleEnum;
 
   @ApiProperty({
     description: 'Creation timestamp',

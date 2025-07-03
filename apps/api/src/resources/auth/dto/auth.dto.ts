@@ -4,6 +4,13 @@ import { AccountDto } from '../../accounts/dto/account.dto';
 
 export class OtpRequestDto extends PickType(AccountDto, ['email'] as const) {}
 
+export class SignOnRequestDto extends PickType(AccountDto, [
+  'tenantId',
+  'name',
+  'email',
+  'phone',
+] as const) {}
+
 export class SignInRequestDto extends PickType(AccountDto, ['email'] as const) {
   @ApiProperty({
     description: 'One Time Password (OTP) for admin sign-in',
@@ -13,6 +20,12 @@ export class SignInRequestDto extends PickType(AccountDto, ['email'] as const) {
   @IsNotEmpty()
   otp: string;
 }
+
+export class SignOnResponseDto extends PickType(AccountDto, [
+  'id',
+  'tenantId',
+  'createdAt',
+] as const) {}
 
 export class SignInResponseDto {
   @ApiProperty({
