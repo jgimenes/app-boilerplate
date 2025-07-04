@@ -29,6 +29,12 @@ export class SignOnResponseDto extends PickType(AccountDto, [
 
 export class SignInResponseDto {
   @ApiProperty({
+    description: 'Token Type',
+    example: 'Bearer',
+  })
+  tokenType: string = 'Bearer';
+
+  @ApiProperty({
     description: 'Access token for admin authentication',
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
   })
@@ -39,6 +45,12 @@ export class SignInResponseDto {
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
   })
   refreshToken: string;
+
+  @ApiProperty({
+    description: 'Expiration time of the access token in seconds',
+    example: 3600,
+  })
+  expireIn: number = 3600;
 
   @ApiProperty({
     description: 'Expiration time of the access token in seconds',

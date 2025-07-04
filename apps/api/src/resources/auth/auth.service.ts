@@ -164,7 +164,10 @@ export class AuthService {
       account.phone
     );
     const refreshToken = await this.getRefreshToken(account.id);
-    const expiresAt = Math.floor(Date.now() / 1000) + 5 * 60; // 5 minutes
+
+    const decoded: { exp: number } | null = this.jwtService.decode(accessToken);
+
+    const expiresAt = decoded?.exp ?? 0;
 
     return plainToInstance(SignInResponseDto, {
       accessToken,
@@ -228,7 +231,7 @@ export class AuthService {
         aud: 'your-audience', // Define your audience
       },
       {
-        expiresIn: '5m',
+        expiresIn: '1h',
       }
     );
 

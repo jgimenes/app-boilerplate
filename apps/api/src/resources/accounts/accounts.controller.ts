@@ -8,8 +8,10 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
   ApiNoContentResponse,
@@ -21,6 +23,7 @@ import {
 } from '@nestjs/swagger';
 import { HttpExceptionDto } from 'src/common/dto/http-exception.dto';
 import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountsService } from './accounts.service';
 import { AccountResponseDto, AccountsResponseDto } from './dto/account.dto';
 import {
@@ -31,6 +34,8 @@ import { UpdateAccountRequestDto } from './dto/update-account.dto';
 
 @Controller('accounts')
 @ApiTags('Accounts')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth('jwt')
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 

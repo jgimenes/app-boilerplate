@@ -14,7 +14,14 @@ export function publicSetupSwagger(app: INestApplication) {
       'API for the Nest JS project, providing a robust foundation for building scalable applications.'
     )
     .setVersion('1.0.0')
-    .addBearerAuth()
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+      'jwt'
+    )
     .addTag('Authentication', 'Endpoints for user authentication')
     .build();
 
@@ -34,7 +41,14 @@ export function adminSetupSwagger(app: INestApplication) {
       'API for the Nest JS project, providing a robust foundation for building scalable applications.'
     )
     .setVersion('1.0.0')
-    .addBearerAuth()
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+      'jwt'
+    )
     .addTag('Authentication', 'Endpoints for user authentication')
     .addTag('Accounts', 'Endpoints for managing accounts')
     .build();
