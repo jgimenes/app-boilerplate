@@ -8,6 +8,7 @@ import {
 import { plainToInstance } from 'class-transformer';
 import { MetadataDto } from 'src/common/dto/metadata.dto';
 import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
+import { AccountRoleEnum } from 'src/common/enums/accuount-role.enum';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   AccountResponseDto,
@@ -46,14 +47,13 @@ export class AccountsService {
     const account = await this.prisma.account.upsert({
       where: { email },
       update: {
-        name,
-        phone,
         deletedAt: null,
       },
       create: {
         name,
         email,
         phone,
+        role: AccountRoleEnum.Sysadmin,
       },
     });
 
@@ -95,6 +95,7 @@ export class AccountsService {
         name,
         email,
         phone,
+
         deletedAt: deletedAt ? new Date(deletedAt) : null,
       },
     });
@@ -130,6 +131,7 @@ export class AccountsService {
       'name',
       'email',
       'phone',
+      'role',
       'createdAt',
       'updatedAt',
     ];

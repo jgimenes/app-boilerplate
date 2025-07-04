@@ -17,9 +17,9 @@ import {
 import { HttpExceptionDto } from 'src/common/dto/http-exception.dto';
 import { AuthService } from './auth.service';
 import {
+  AccessTokenResponseDto,
   OtpRequestDto,
   SignInRequestDto,
-  SignInResponseDto,
 } from './dto/auth.dto';
 
 @Controller('accounts')
@@ -66,13 +66,15 @@ export class AuthController {
   })
   @ApiCreatedResponse({
     description: 'Account signed in successfully.',
-    type: SignInResponseDto,
+    type: AccessTokenResponseDto,
   })
   @ApiUnauthorizedResponse({
     description: 'Unauthorized access. Invalid email or account not found.',
     type: HttpExceptionDto,
   })
-  signInAccount(@Body() request: SignInRequestDto): Promise<SignInResponseDto> {
+  signInAccount(
+    @Body() request: SignInRequestDto
+  ): Promise<AccessTokenResponseDto> {
     return this.authService.signIn(request);
   }
 

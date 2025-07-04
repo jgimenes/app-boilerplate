@@ -27,7 +27,15 @@ export class SignOnResponseDto extends PickType(AccountDto, [
   'createdAt',
 ] as const) {}
 
-export class SignInResponseDto {
+export class RefreshAccessTokenRequestDto {
+  @ApiProperty({
+    description: 'Refresh token for admin authentication',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
+  refreshToken: string;
+}
+
+export class AccessTokenResponseDto {
   @ApiProperty({
     description: 'Token Type',
     example: 'Bearer',
@@ -54,7 +62,7 @@ export class SignInResponseDto {
 
   @ApiProperty({
     description: 'Expiration time of the access token in seconds',
-    example: 3600,
+    example: 1751638801,
   })
   expiresAt: number;
 }

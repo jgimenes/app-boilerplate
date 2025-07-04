@@ -12,9 +12,9 @@ import { ClsService } from 'nestjs-cls';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { authUtils } from 'src/utils/auth.utils';
 import {
+  AccessTokenResponseDto,
   OtpRequestDto,
   SignInRequestDto,
-  SignInResponseDto,
 } from './dto/auth.dto';
 
 @Injectable()
@@ -101,7 +101,7 @@ export class AuthService {
 
   //* Sign In the account
 
-  async signIn(request: SignInRequestDto): Promise<SignInResponseDto> {
+  async signIn(request: SignInRequestDto): Promise<AccessTokenResponseDto> {
     const { email, otp } = request;
 
     // Find the auth data for the account
@@ -161,7 +161,8 @@ export class AuthService {
       account.id,
       account.name,
       account.email,
-      account.phone
+      account.phone,
+      account.role
     );
     const refreshToken = await this.getRefreshToken(account.id);
 
@@ -169,7 +170,7 @@ export class AuthService {
 
     const expiresAt = decoded?.exp ?? 0;
 
-    return plainToInstance(SignInResponseDto, {
+    return plainToInstance(AccessTokenResponseDto, {
       accessToken,
       refreshToken,
       expiresAt,
@@ -177,7 +178,6 @@ export class AuthService {
   }
 
   //Todo: Verify Account
-  //Todo: Refresh the account access token
 
   //* Sign Out the account
 
@@ -213,13 +213,16 @@ export class AuthService {
     );
   }
 
+  //Todo: Refresh the access token
+
   //* Get Access Token
 
   getAccessToken(
     sub: string,
     name: string,
     email: string,
-    phone: string | undefined | null
+    phone: string | undefined | null,
+    role: string
   ): Promise<string> {
     const accessToken: string = this.jwtService.sign(
       {
@@ -227,6 +230,7 @@ export class AuthService {
         name,
         email,
         phone,
+        role,
         iss: 'your-issuer', // Define your issuer
         aud: 'your-audience', // Define your audience
       },

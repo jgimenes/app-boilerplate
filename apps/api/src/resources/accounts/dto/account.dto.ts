@@ -2,7 +2,6 @@ import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { Expose, Transform } from 'class-transformer';
 import {
   IsEmail,
-  IsEnum,
   IsMobilePhone,
   IsNotEmpty,
   IsOptional,
@@ -74,14 +73,12 @@ export class AccountDto {
   phone?: string;
 
   @ApiProperty({
-    description: 'Role of the account',
-    example: 'SYSADMIN',
-    type: AccountRoleEnum,
+    enum: AccountRoleEnum,
     enumName: 'AccountRoleEnum',
+    type: () => String, // <- Adicione isso
   })
-  @IsEnum(AccountRoleEnum)
   @Expose()
-  role?: AccountRoleEnum;
+  role: AccountRoleEnum;
 
   @ApiProperty({
     description: 'Creation timestamp',
@@ -122,6 +119,7 @@ export class AccountResponseDto extends PartialType(
     'name',
     'email',
     'phone',
+    'role',
     'createdAt',
     'updatedAt',
     'deletedAt',
